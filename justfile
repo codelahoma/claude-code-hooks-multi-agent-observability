@@ -109,9 +109,9 @@ hooks:
 
 # ─── Init ────────────────────────────────────────────────
 
-# Install observability hooks into a target repo
-init target *FLAGS:
-    {{project_root}}/scripts/init.sh {{FLAGS}} {{target}}
+# Install observability hooks into a target repo (pass flags and target in any order)
+init +ARGS:
+    {{project_root}}/scripts/init.sh {{ARGS}}
 
 # ─── Open ────────────────────────────────────────────────
 
