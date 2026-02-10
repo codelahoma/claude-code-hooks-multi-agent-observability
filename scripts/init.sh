@@ -46,7 +46,7 @@ EOF
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --source-app)
-      if [[ $# -lt 2 ]]; then echo "Error: --source-app requires a value" >&2; usage 1; fi
+      if [[ $# -lt 2 ]] || [[ "$2" == --* ]]; then echo "Error: --source-app requires a value" >&2; usage 1; fi
       SOURCE_APP="$2"; shift 2 ;;
     --dry-run) DRY_RUN=true; shift ;;
     --force) FORCE=true; shift ;;
