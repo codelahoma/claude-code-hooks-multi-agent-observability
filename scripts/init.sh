@@ -125,8 +125,6 @@ merge_settings() {
   local target_settings="$TARGET_CLAUDE/settings.json"
   local source_settings="$SOURCE_CLAUDE/settings.json"
 
-  mkdir -p "$TARGET_CLAUDE"
-
   local rc=0
   python3 -c "
 import json, sys
@@ -171,6 +169,7 @@ if json.dumps(target, sort_keys=True) == original:
     sys.exit(2)  # no changes needed
 
 if not dry_run:
+    import os; os.makedirs(os.path.dirname(target_path), exist_ok=True)
     with open(target_path, 'w') as f:
         json.dump(target, f, indent=2)
         f.write('\n')
