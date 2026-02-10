@@ -45,7 +45,9 @@ EOF
 # ─── Argument parsing ───
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --source-app) SOURCE_APP="$2"; shift 2 ;;
+    --source-app)
+      if [[ $# -lt 2 ]]; then echo "Error: --source-app requires a value" >&2; usage 1; fi
+      SOURCE_APP="$2"; shift 2 ;;
     --dry-run) DRY_RUN=true; shift ;;
     --force) FORCE=true; shift ;;
     --with-agents) WITH_AGENTS=true; shift ;;
