@@ -217,7 +217,10 @@ copy_dir "status_lines"
 
 # Optional extras
 [[ "$WITH_AGENTS" == true ]] && copy_dir "agents"
-[[ "$WITH_COMMANDS" == true ]] && copy_dir "commands"
+if [[ "$WITH_COMMANDS" == true ]]; then
+  copy_dir "commands"
+  copy_dir "hooks/validators"  # commands may reference validator hooks
+fi
 [[ "$WITH_SKILLS" == true ]] && copy_dir "skills"
 [[ "$WITH_OUTPUT_STYLES" == true ]] && copy_dir "output-styles"
 
