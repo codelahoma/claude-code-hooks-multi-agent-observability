@@ -59,7 +59,9 @@ while [[ $# -gt 0 ]]; do
       shift ;;
     -h|--help) usage ;;
     -*) echo "Unknown flag: $1" >&2; exit 1 ;;
-    *) TARGET="$1"; shift ;;
+    *)
+      if [[ -n "$TARGET" ]]; then echo "Error: unexpected argument '$1' (target already set to '$TARGET')" >&2; usage 1; fi
+      TARGET="$1"; shift ;;
   esac
 done
 
