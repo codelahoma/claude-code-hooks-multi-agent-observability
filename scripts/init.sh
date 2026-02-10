@@ -70,7 +70,11 @@ if [[ -z "$TARGET" ]]; then
   usage 1
 fi
 
-TARGET="$(cd "$TARGET" 2>/dev/null && pwd || echo "$TARGET")"
+if [[ ! -d "$TARGET" ]]; then
+  echo "Error: target path does not exist: $TARGET" >&2
+  exit 1
+fi
+TARGET="$(cd "$TARGET" && pwd)"
 TARGET_CLAUDE="$TARGET/.claude"
 
 if [[ -z "$SOURCE_APP" ]]; then
@@ -130,9 +134,10 @@ merge_settings() {
 import json, sys
 
 dry_run = sys.argv[1] == 'true'
-source_app = sys.argv[2]
-source_path = sys.argv[3]
-target_path = sys.argv[4]
+force = sys.argv[2] == 'true'
+source_app = sys.argv[3]
+source_path = sys.argv[4]
+target_path = sys.argv[5]
 
 with open(source_path) as f:
     source = json.load(f)
@@ -149,20 +154,20 @@ except json.JSONDecodeError as e:
 
 original = json.dumps(target, sort_keys=True)
 
-# Merge hooks: add hook types that don't exist in target
+# Merge hooks: add missing hook types, or overwrite all if --force
 source_hooks = source.get('hooks', {})
 target_hooks = target.setdefault('hooks', {})
 for hook_type, hook_val in source_hooks.items():
-    if hook_type not in target_hooks:
+    if force or hook_type not in target_hooks:
         target_hooks[hook_type] = hook_val
 
-# Set statusLine only if absent
-if 'statusLine' not in target:
+# Set statusLine (only if absent, or always if --force)
+if force or 'statusLine' not in target:
     target['statusLine'] = source.get('statusLine')
 
-# Set env.OBSERVABILITY_APP_NAME only if not already set
+# Set env.OBSERVABILITY_APP_NAME (only if absent, or always if --force)
 target_env = target.setdefault('env', {})
-if 'OBSERVABILITY_APP_NAME' not in target_env:
+if force or 'OBSERVABILITY_APP_NAME' not in target_env:
     target_env['OBSERVABILITY_APP_NAME'] = source_app
 
 if json.dumps(target, sort_keys=True) == original:
@@ -173,7 +178,7 @@ if not dry_run:
     with open(target_path, 'w') as f:
         json.dump(target, f, indent=2)
         f.write('\n')
-" "$DRY_RUN" "$SOURCE_APP" "$source_settings" "$target_settings" || rc=$?
+" "$DRY_RUN" "$FORCE" "$SOURCE_APP" "$source_settings" "$target_settings" || rc=$?
 
   if [[ "$rc" -eq 0 ]]; then
     [[ "$DRY_RUN" == true ]] && echo "  [dry-run] settings.json (merge)"
