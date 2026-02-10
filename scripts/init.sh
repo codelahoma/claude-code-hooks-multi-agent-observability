@@ -185,6 +185,9 @@ echo "  source-app: $SOURCE_APP"
 [[ "$FORCE" == true ]] && echo "  (force mode)"
 echo ""
 
+# Validate/merge settings.json first (fail fast before copying files)
+merge_settings
+
 # Core: top-level hook scripts (excluding test_hitl.py)
 for file in "$SOURCE_CLAUDE"/hooks/*.py; do
   base="$(basename "$file")"
@@ -197,9 +200,6 @@ copy_dir "hooks/utils"
 
 # Core: status_lines/
 copy_dir "status_lines"
-
-# Core: settings.json (merged)
-merge_settings
 
 # Optional extras
 [[ "$WITH_AGENTS" == true ]] && copy_dir "agents"
