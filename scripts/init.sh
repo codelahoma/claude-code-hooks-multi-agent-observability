@@ -145,8 +145,11 @@ with open(source_path) as f:
 try:
     with open(target_path) as f:
         target = json.load(f)
-except (FileNotFoundError, json.JSONDecodeError):
+except FileNotFoundError:
     target = {}
+except json.JSONDecodeError as e:
+    print(f'Error: {target_path} contains invalid JSON: {e}', file=sys.stderr)
+    sys.exit(1)
 
 # Merge hooks: add hook types that don't exist in target
 source_hooks = source.get('hooks', {})
