@@ -39,7 +39,7 @@ Flags:
   --with-all             Install all optional extras
   -h, --help             Show this help
 EOF
-  exit 0
+  exit "${1:-0}"
 }
 
 # ─── Argument parsing ───
@@ -63,7 +63,7 @@ done
 
 if [[ -z "$TARGET" ]]; then
   echo "Error: target repo path is required." >&2
-  usage
+  usage 1
 fi
 
 TARGET="$(cd "$TARGET" 2>/dev/null && pwd || echo "$TARGET")"
