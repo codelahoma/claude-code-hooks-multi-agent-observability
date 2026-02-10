@@ -133,6 +133,7 @@ merge_settings() {
 
   mkdir -p "$TARGET_CLAUDE"
 
+  local rc=0
   python3 -c "
 import json, sys
 
@@ -153,6 +154,8 @@ except json.JSONDecodeError as e:
     print(f'Error: {target_path} contains invalid JSON: {e}', file=sys.stderr)
     sys.exit(1)
 
+original = json.dumps(target, sort_keys=True)
+
 # Merge hooks: add hook types that don't exist in target
 source_hooks = source.get('hooks', {})
 target_hooks = target.setdefault('hooks', {})
@@ -169,12 +172,22 @@ target_env = target.setdefault('env', {})
 if 'OBSERVABILITY_APP_NAME' not in target_env:
     target_env['OBSERVABILITY_APP_NAME'] = source_app
 
+if json.dumps(target, sort_keys=True) == original:
+    sys.exit(2)  # no changes needed
+
 with open(target_path, 'w') as f:
     json.dump(target, f, indent=2)
     f.write('\n')
-" "$SOURCE_APP" "$source_settings" "$target_settings"
+" "$SOURCE_APP" "$source_settings" "$target_settings" || rc=$?
 
-  INSTALLED=$((INSTALLED + 1))
+  if [[ "$rc" -eq 0 ]]; then
+    INSTALLED=$((INSTALLED + 1))
+  elif [[ "$rc" -eq 2 ]]; then
+    SKIPPED=$((SKIPPED + 1))
+    SKIPPED_FILES+=("settings.json")
+  else
+    exit "$rc"
+  fi
 }
 
 # ─── Main ───
