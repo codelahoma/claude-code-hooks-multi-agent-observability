@@ -125,21 +125,16 @@ merge_settings() {
   local target_settings="$TARGET_CLAUDE/settings.json"
   local source_settings="$SOURCE_CLAUDE/settings.json"
 
-  if [[ "$DRY_RUN" == true ]]; then
-    echo "  [dry-run] settings.json (merge)"
-    INSTALLED=$((INSTALLED + 1))
-    return
-  fi
-
   mkdir -p "$TARGET_CLAUDE"
 
   local rc=0
   python3 -c "
 import json, sys
 
-source_app = sys.argv[1]
-source_path = sys.argv[2]
-target_path = sys.argv[3]
+dry_run = sys.argv[1] == 'true'
+source_app = sys.argv[2]
+source_path = sys.argv[3]
+target_path = sys.argv[4]
 
 with open(source_path) as f:
     source = json.load(f)
@@ -175,12 +170,14 @@ if 'OBSERVABILITY_APP_NAME' not in target_env:
 if json.dumps(target, sort_keys=True) == original:
     sys.exit(2)  # no changes needed
 
-with open(target_path, 'w') as f:
-    json.dump(target, f, indent=2)
-    f.write('\n')
-" "$SOURCE_APP" "$source_settings" "$target_settings" || rc=$?
+if not dry_run:
+    with open(target_path, 'w') as f:
+        json.dump(target, f, indent=2)
+        f.write('\n')
+" "$DRY_RUN" "$SOURCE_APP" "$source_settings" "$target_settings" || rc=$?
 
   if [[ "$rc" -eq 0 ]]; then
+    [[ "$DRY_RUN" == true ]] && echo "  [dry-run] settings.json (merge)"
     INSTALLED=$((INSTALLED + 1))
   elif [[ "$rc" -eq 2 ]]; then
     SKIPPED=$((SKIPPED + 1))
