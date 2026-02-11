@@ -107,6 +107,12 @@ hook-test name:
 hooks:
     @ls -1 {{project_root}}/.claude/hooks/*.py | xargs -I{} basename {} .py
 
+# ─── Init ────────────────────────────────────────────────
+
+# Install observability hooks into a target repo (pass flags and target in any order)
+init +ARGS:
+    {{project_root}}/scripts/init.sh {{ARGS}}
+
 # ─── Open ────────────────────────────────────────────────
 
 # Open the client dashboard in browser
